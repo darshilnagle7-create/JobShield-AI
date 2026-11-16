@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JobShield AI — Job Posting Analyzer</title>
+<style>
+  :root{--bg:#0b1020;--panel:#121a2e;--panel2:#17223a;--line:rgba(255,255,255,.1);--text:#edf3ff;--muted:#9eacc7;--cyan:#55d6d1;--blue:#7c8cff;--green:#55d6a5;--red:#ff7386;--shadow:0 24px 70px rgba(0,0,0,.28)}
+  *{box-sizing:border-box} html{scroll-behavior:smooth}
+  body{margin:0;background:radial-gradient(ellipse at 12% 0%,rgba(71,105,255,.17),transparent 35%),radial-gradient(ellipse at 90% 18%,rgba(40,210,190,.10),transparent 30%),var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
+  button,input,textarea,select{font:inherit} button{cursor:pointer}
+  .shell{max-width:1240px;margin:auto;padding:28px 24px 52px}
+  header{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:42px}
+  .brand{display:flex;align-items:center;gap:12px}.logo{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,var(--cyan),var(--blue));color:#071323;font-size:22px;font-weight:900;box-shadow:0 8px 30px #55d6d133}
+  .brand-name{font-size:18px;font-weight:800;letter-spacing:-.4px}.brand-sub{font-size:11px;color:var(--muted);margin-top:3px;letter-spacing:1.5px;text-transform:uppercase}
+  .status{display:flex;align-items:center;gap:8px;padding:9px 13px;border:1px solid var(--line);border-radius:999px;color:#c6d4ec;font-size:12px;background:#ffffff05}.dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 12px #55d6a5}
+  .hero{display:grid;grid-template-columns:1.25fr .75fr;gap:28px;align-items:center;margin-bottom:32px}
+  .eyebrow{color:var(--cyan);font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:9px}.eyebrow:before{content:"";height:1px;width:25px;background:var(--cyan)}
+  h1{font-size:clamp(34px,5vw,57px);line-height:1.05;letter-spacing:-2.5px;margin:17px 0 18px;max-width:700px}h1 span{background:linear-gradient(90deg,var(--cyan),#9ba7ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{color:var(--muted);line-height:1.75;font-size:15px;max-width:650px;margin:0}
+  .hero-card{border:1px solid var(--line);border-radius:22px;padding:23px;background:linear-gradient(145deg,#17233cdd,#11192add);box-shadow:var(--shadow);position:relative;overflow:hidden}.hero-card:after{content:"";position:absolute;width:160px;height:160px;right:-55px;top:-75px;border-radius:50%;background:#657cff20;filter:blur(2px)}
+  .mini-head{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px}.mini-icon{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:#55d6d117;color:var(--cyan);font-size:17px}
+  .scan-title{font-size:20px;font-weight:750;margin:17px 0 7px}.scan-copy{font-size:12px;color:var(--muted);line-height:1.6}.scan-bars{display:grid;gap:8px;margin-top:20px}.scan-bar{height:7px;background:#ffffff0b;border-radius:99px;overflow:hidden}.scan-bar i{height:100%;display:block;border-radius:99px;background:linear-gradient(90deg,var(--cyan),var(--blue))}
+  .layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,.75fr);gap:22px;align-items:start}
+  .panel{background:linear-gradient(145deg,rgba(20,29,50,.96),rgba(16,24,42,.96));border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow);overflow:hidden}
+  .panel-head{padding:23px 25px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:15px}.panel-head h2{margin:0;font-size:18px;letter-spacing:-.4px}.panel-head p{margin:6px 0 0;font-size:12px;color:var(--muted)}.step{font-size:11px;color:var(--cyan);border:1px solid #55d6d13a;background:#55d6d10d;padding:7px 10px;border-radius:9px;white-space:nowrap}
+  form{padding:24px 25px 26px}.section-title{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:1.4px;color:#c3cde3;margin:0 0 15px;display:flex;align-items:center;gap:9px}.section-title span{color:var(--cyan);font-size:15px}
+  .fields{display:grid;grid-template-columns:1fr 1fr;gap:17px 15px}.field{display:flex;flex-direction:column;gap:8px;min-width:0}.field.full{grid-column:1/-1}label{font-size:12px;font-weight:650;color:#d4def2}label .optional{color:#7585a4;font-weight:400}
+  input,textarea,select{width:100%;border:1px solid #ffffff16;background:#0c1426;color:var(--text);border-radius:11px;padding:12px 13px;outline:none;transition:border .2s,box-shadow .2s;min-width:0}input::placeholder,textarea::placeholder{color:#63718d}input:focus,textarea:focus,select:focus{border-color:#55d6d188;box-shadow:0 0 0 3px #55d6d111}textarea{resize:vertical;min-height:95px;line-height:1.55}textarea.large{min-height:135px}select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239eacc7' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:36px}option{background:#121a2e}
+  .section{margin-bottom:28px}.section + .section{padding-top:25px;border-top:1px solid var(--line)}
+  .toggle-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.toggle{padding:13px 12px;border:1px solid var(--line);border-radius:12px;background:#ffffff03;display:flex;align-items:center;gap:10px;min-height:65px}.toggle input{width:16px;height:16px;accent-color:var(--cyan);flex-shrink:0}.toggle strong{display:block;font-size:11px;line-height:1.35}.toggle small{display:block;color:var(--muted);font-size:10px;margin-top:4px}
+  .actions{display:flex;gap:11px;align-items:center;flex-wrap:wrap;margin-top:26px}.primary{border:0;border-radius:12px;padding:14px 20px;color:#071323;font-weight:850;background:linear-gradient(100deg,var(--cyan),#91a0ff);box-shadow:0 10px 28px #55d6d124;display:flex;align-items:center;justify-content:center;gap:10px;transition:transform .2s,filter .2s}.primary:hover{transform:translateY(-1px);filter:brightness(1.06)}.primary:disabled{opacity:.65;cursor:wait;transform:none}.secondary{border:1px solid var(--line);background:#ffffff06;color:#cbd6eb;border-radius:12px;padding:13px 16px;font-weight:650}.fineprint{font-size:11px;color:#7888a7;line-height:1.5;margin-top:13px}
+  .side{display:grid;gap:18px}.result-panel{min-height:250px}.result-content{padding:23px 24px}.empty-state{text-align:center;padding:21px 8px 14px}.empty-icon{width:58px;height:58px;border:1px solid #ffffff12;background:#ffffff06;border-radius:18px;display:grid;place-items:center;font-size:25px;margin:0 auto 15px}.empty-state h3{font-size:16px;margin:0 0 8px}.empty-state p{font-size:12px;line-height:1.7;color:var(--muted);margin:0 auto;max-width:255px}
+  .result-label{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:800}.verdict{font-size:25px;font-weight:850;letter-spacing:-.8px;margin:10px 0 6px}.verdict.safe{color:var(--green)}.verdict.danger{color:var(--red)}.verdict.neutral{color:#ffcf75}.result-desc{font-size:12px;color:var(--muted);line-height:1.65}.confidence{margin-top:22px}.confidence-top{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#cbd6eb;margin-bottom:9px}.confidence-top strong{font-size:17px}.meter{height:9px;background:#ffffff0b;border-radius:99px;overflow:hidden}.meter-fill{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--blue));border-radius:99px;transition:width .5s}
+  .notice{display:none;padding:12px 14px;border-radius:11px;font-size:12px;line-height:1.5;margin-top:15px}.notice.error{display:block;color:#ffb4bf;background:#ff738610;border:1px solid #ff738630}.notice.info{display:block;color:#a9e8e0;background:#55d6d110;border:1px solid #55d6d130}
+  .tips{padding:22px 23px}.tips h3{font-size:15px;margin:0 0 17px}.tip{display:flex;gap:12px;margin-top:15px}.tip-icon{flex-shrink:0;width:31px;height:31px;display:grid;place-items:center;border-radius:10px;background:#7c8cff16;color:#aab4ff}.tip strong{font-size:12px;display:block;margin:1px 0 5px}.tip p{font-size:11px;color:var(--muted);line-height:1.55;margin:0}
+  .privacy{padding:17px 19px;border:1px solid #55d6d123;background:#55d6d108;border-radius:16px;display:flex;gap:12px;align-items:flex-start}.privacy span{font-size:18px}.privacy strong{font-size:12px;display:block;margin-bottom:5px}.privacy p{margin:0;color:var(--muted);font-size:11px;line-height:1.55}
+  footer{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap;border-top:1px solid var(--line);margin-top:35px;padding-top:20px;color:#6f7e9b;font-size:11px}
+  .spinner{width:15px;height:15px;border:2px solid #07132355;border-top-color:#071323;border-radius:50%;animation:spin .7s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+  @media(max-width:900px){.hero{grid-template-columns:1fr}.hero-card{display:none}.layout{grid-template-columns:1fr}.side{grid-template-columns:1fr 1fr}.result-panel{grid-row:span 2}}
+  @media(max-width:600px){.shell{padding:19px 13px 35px}header{margin-bottom:30px}.status{font-size:10px}.brand-name{font-size:16px}h1{letter-spacing:-1.5px}.panel-head,form{padding-left:17px;padding-right:17px}.fields{grid-template-columns:1fr}.field.full{grid-column:auto}.toggle-grid{grid-template-columns:1fr}.toggle{min-height:55px}.side{grid-template-columns:1fr}.result-panel{grid-row:auto}.actions>*{width:100%}footer{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <div class="brand">
+      <div class="logo">J</div>
+      <div><div class="brand-name">JobShield <span style="color:var(--cyan)">AI</span></div><div class="brand-sub">Trust every opportunity</div></div>
+    </div>
+    <div class="status"><span class="dot"></span> AI screening workspace</div>
+  </header>
+
+  <section class="hero">
+    <div>
+      <div class="eyebrow">Smart job verification</div>
+      <h1>Spot fake job posts.<br><span>Protect your next move.</span></h1>
+      <p>Analyze a job listing with your machine-learning model. Add the role details and company information to get a prediction about whether the posting may be fraudulent.</p>
+    </div>
+    <div class="hero-card">
+      <div class="mini-head"><span>SCREENING ENGINE</span><div class="mini-icon">✦</div></div>
+      <div class="scan-title">One listing. Clearer signals.</div>
+      <div class="scan-copy">The model evaluates job text, employment details, and selected listing indicators.</div>
+      <div class="scan-bars"><div class="scan-bar"><i style="width:92%"></i></div><div class="scan-bar"><i style="width:69%"></i></div><div class="scan-bar"><i style="width:82%"></i></div></div>
+    </div>
+  </section>
+
+  <main class="layout">
+    <section class="panel">
+      <div class="panel-head"><div><h2>Job listing details</h2><p>Enter the information from the job post you want to check.</p></div><span class="step">STEP 01 / INPUT</span></div>
+      <form id="jobForm">
+        <div class="section">
+          <h3 class="section-title"><span>✳</span> Role & company</h3>
+          <div class="fields">
+            <div class="field full"><label for="title">Job title <span style="color:var(--red)">*</span></label><input id="title" name="title" placeholder="e.g. Junior Data Analyst" required maxlength="250"></div>
+            <div class="field full"><label for="company_profile">Company profile <span class="optional">(optional)</span></label><textarea id="company_profile" name="company_profile" placeholder="What does the company do? Add the company profile text..."></textarea></div>
+            <div class="field full"><label for="description">Job description <span class="optional">(recommended)</span></label><textarea class="large" id="description" name="description" placeholder="Describe the role, responsibilities, work arrangement, and what the employer is offering..."></textarea></div>
+            <div class="field full"><label for="requirements">Requirements <span class="optional">(optional)</span></label><textarea id="requirements" name="requirements" placeholder="Skills, qualifications, experience, or documents required..."></textarea></div>
+          </div>
+        </div>
+        <div class="section">
+          <h3 class="section-title"><span>⌘</span> Job characteristics</h3>
+          <div class="fields">
+            <div class="field"><label for="employment_type">Employment type</label><select id="employment_type" name="employment_type"><option value="unknown">Not specified</option><option>Full-time</option><option>Part-time</option><option>Contract</option><option>Temporary</option><option>Other</option></select></div>
+            <div class="field"><label for="required_experience">Required experience</label><select id="required_experience" name="required_experience"><option value="unknown">Not specified</option><option>Internship</option><option>Entry level</option><option>Associate</option><option>Mid-Senior level</option><option>Director</option><option>Executive</option><option>Not Applicable</option></select></div>
+            <div class="field full"><label for="required_education">Required education</label><select id="required_education" name="required_education"><option value="unknown">Not specified</option><option>High School or equivalent</option><option>Associate Degree</option><option>Bachelor's Degree</option><option>Master's Degree</option><option>Doctorate</option><option>Certification</option><option>Professional</option><option>Some College Coursework Completed</option><option>Unspecified</option></select></div>
+          </div>
+        </div>
+        <div class="section">
+          <h3 class="section-title"><span>◈</span> Listing signals</h3>
+          <div class="toggle-grid">
+            <label class="toggle"><input type="checkbox" id="telecommuting" name="telecommuting"><span><strong>Remote / telecommuting</strong><small>Remote work is offered</small></span></label>
+            <label class="toggle"><input type="checkbox" id="has_company_logo" name="has_company_logo"><span><strong>Company logo</strong><small>Logo appears on listing</small></span></label>
+            <label class="toggle"><input type="checkbox" id="has_questions" name="has_questions"><span><strong>Screening questions</strong><small>Questions are included</small></span></label>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="primary" id="submitBtn" type="submit"><span>Analyze job posting</span><span>↗</span></button>
+          <button class="secondary" type="button" id="demoBtn">Load sample</button>
+          <button class="secondary" type="reset" id="resetBtn">Clear form</button>
+        </div>
+        <div class="fineprint">Prediction is generated by the model connected to this app. Always verify employers independently and never pay to get a job.</div>
+      </form>
+    </section>
+
+    <aside class="side">
+      <section class="panel result-panel" id="resultPanel">
+        <div class="panel-head"><div><h2>Screening result</h2><p>Your model's prediction will appear here.</p></div><span class="step">STEP 02</span></div>
+        <div class="result-content" aria-live="polite">
+          <div id="emptyState" class="empty-state"><div class="empty-icon">⌕</div><h3>Ready when you are</h3><p>Complete the job details and select <b>Analyze job posting</b> to see the result.</p></div>
+          <div id="resultState" hidden>
+            <div class="result-label">Model assessment</div><div id="verdict" class="verdict">—</div><div id="resultDesc" class="result-desc"></div>
+            <div class="confidence"><div class="confidence-top"><span>Model probability score</span><strong id="scoreText">—</strong></div><div class="meter"><div class="meter-fill" id="meterFill"></div></div></div>
+            <div class="fineprint" id="scoreNote">This score is the model output, not a guarantee.</div>
+          </div>
+          <div id="notice" class="notice"></div>
+        </div>
+      </section>
+
+      <section class="panel tips">
+        <h3>What helps a useful check?</h3>
+        <div class="tip"><div class="tip-icon">✎</div><div><strong>Include the full description</strong><p>More listing context gives the model more text to evaluate.</p></div></div>
+        <div class="tip"><div class="tip-icon">◎</div><div><strong>Check the employer yourself</strong><p>Verify the official website, email domain, and recruiter identity.</p></div></div>
+        <div class="tip"><div class="tip-icon">⚑</div><div><strong>Watch for red flags</strong><p>Upfront fees, guaranteed high pay, and requests for sensitive data deserve caution.</p></div></div>
+      </section>
+
+      <div class="privacy"><span>♢</span><div><strong>Use good judgment</strong><p>This tool provides a machine-learning estimate. It can make mistakes, so do not rely on the prediction alone.</p></div></div>
+    </aside>
+  </main>
+  <footer><span>© 2026 JobShield AI · ML-powered job posting analysis</span><span>Built for responsible job-search decisions</span></footer>
+</div>
+<script>
+  const form = document.getElementById('jobForm');
+  const submitBtn = document.getElementById('submitBtn');
+  const notice = document.getElementById('notice');
+  const emptyState = document.getElementById('emptyState');
+  const resultState = document.getElementById('resultState');
+
+  function getPayload() {
+    const data = new FormData(form);
+    return {
+      title: (data.get('title') || '').trim(),
+      company_profile: (data.get('company_profile') || '').trim(),
+      description: (data.get('description') || '').trim(),
+      requirements: (data.get('requirements') || '').trim(),
+      employment_type: data.get('employment_type') || 'unknown',
+      required_experience: data.get('required_experience') || 'unknown',
+      required_education: data.get('required_education') || 'unknown',
+      telecommuting: document.getElementById('telecommuting').checked ? 1 : 0,
+      has_company_logo: document.getElementById('has_company_logo').checked ? 1 : 0,
+      has_questions: document.getElementById('has_questions').checked ? 1 : 0
+    };
+  }
+  function showNotice(message, type='error') {
+    notice.className = 'notice ' + type;
+    notice.textContent = message;
+  }
+  function hideNotice() { notice.className = 'notice'; notice.textContent = ''; }
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    hideNotice();
+    const payload = getPayload();
+    if (!payload.title) {
+      document.getElementById('title').focus();
+      showNotice('Please enter a job title before analyzing.');
+      return;
+    }
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner"></span><span>Analyzing listing…</span>';
+    try {
+      const response = await fetch('/predict', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(payload)
+      });
+      let data;
+      try { data = await response.json(); }
+      catch { throw new Error('The server did not return valid JSON. Check that your FastAPI app is running.'); }
+      if (!response.ok) {
+        const detail = typeof data.detail === 'string' ? data.detail : 'The API could not process this listing.';
+        throw new Error(detail);
+      }
+      // Supports both the current API key ("fradulent") and the corrected spelling ("fraudulent").
+      const isFraud = Number(data.fraudulent ?? data.fradulent);
+      const probability = Number(data.probability);
+      if (!Number.isFinite(isFraud) || !Number.isFinite(probability)) {
+        throw new Error('The API response is missing prediction fields. Expected fraudulent/fradulent and probability.');
+      }
+      emptyState.hidden = true;
+      resultState.hidden = false;
+      const verdict = document.getElementById('verdict');
+      const score = Math.max(0, Math.min(1, probability));
+      verdict.className = 'verdict ' + (isFraud === 1 ? 'danger' : 'safe');
+      verdict.textContent = isFraud === 1 ? 'Potentially fraudulent' : 'Likely genuine';
+      document.getElementById('resultDesc').textContent = isFraud === 1
+        ? 'The model flagged this posting as potentially fake. Verify the company and do not pay any recruitment fees.'
+        : 'The model did not flag this posting as fraudulent. Still verify the employer before sharing personal information.';
+      document.getElementById('scoreText').textContent = Math.round(score * 100) + '%';
+      document.getElementById('meterFill').style.width = Math.round(score * 100) + '%';
+      document.getElementById('meterFill').style.background = isFraud === 1
+        ? 'linear-gradient(90deg,#ffcf75,#ff7386)' : 'linear-gradient(90deg,#55d6a5,#55d6d1)';
+      document.getElementById('scoreNote').textContent = 'Probability returned by your API. Treat this as a model estimate, not certainty.';
+      showNotice('Analysis complete. Check the assessment and independently verify the employer.', 'info');
+    } catch (error) {
+      showNotice('Could not analyze this listing: ' + error.message + ' Make sure the FastAPI server and model file are available.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<span>Analyze job posting</span><span>↗</span>';
+    }
+  });
+
+  document.getElementById('demoBtn').addEventListener('click', () => {
+    document.getElementById('title').value = 'Junior Data Analyst';
+    document.getElementById('company_profile').value = 'A growing analytics company helping businesses make data-driven decisions.';
+    document.getElementById('description').value = 'We are looking for a Junior Data Analyst to support reporting, data cleaning, dashboard creation, and collaboration with business teams. The successful candidate will communicate clearly and work with structured datasets.';
+    document.getElementById('requirements').value = 'Basic SQL and spreadsheet skills. Familiarity with Python or a BI tool is helpful. Strong attention to detail and willingness to learn.';
+    document.getElementById('employment_type').value = 'Full-time';
+    document.getElementById('required_experience').value = 'Entry level';
+    document.getElementById('required_education').value = "Bachelor's Degree";
+    document.getElementById('telecommuting').checked = false;
+    document.getElementById('has_company_logo').checked = true;
+    document.getElementById('has_questions').checked = true;
+    hideNotice();
+  });
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    setTimeout(() => {
+      emptyState.hidden = false;
+      resultState.hidden = true;
+      hideNotice();
+      document.getElementById('meterFill').style.width = '0';
+    }, 0);
+  });
+</script>
+</body>
+</html>
